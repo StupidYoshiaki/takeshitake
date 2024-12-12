@@ -16,16 +16,16 @@ intents.message_content = True
 intents.messages = True
 client = discord.Client(intents=intents)
 
-# テキスト正規化関数
-def normalize_text(text):
-    text = unicodedata.normalize("NFKC", text)
-    text = kaka.do(text)
-    return text
-
 # 漢字かな変換のためのインスタンス
 kakasi = kakasi()
 kakasi.setMode("J", "H")
 conv = kakasi.getConverter()
+
+# テキスト正規化関数
+def normalize_text(text):
+    text = unicodedata.normalize("NFKC", text)
+    text = kakasi.do(text)
+    return text
 
 # imgフォルダ内のファイル名を取得
 filenames = os.listdir("./img")
