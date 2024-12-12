@@ -6,6 +6,12 @@ import unicodedata
 from pykakasi import kakasi
 from dotenv import load_dotenv
 
+from typing import List
+from sudachipy import tokenizer
+from sudachipy import dictionary
+from langchain.retrievers import BM25Retriever
+
+
 # 環境変数からトークンを取得
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -37,7 +43,6 @@ for filename in filenames:
     yomi = normalize_text(filename)
     yomi_to_filename[yomi] = filename
 
-
 # 部分一致でファイル名を取得する関数
 def get_filename(query, yomi_to_filename=yomi_to_filename):
     # query_yomi = conv.do(query)
@@ -47,6 +52,16 @@ def get_filename(query, yomi_to_filename=yomi_to_filename):
         (file for file in yomi_to_filename.keys() if pattern.search(file)), None
     )
     return match if match else None
+
+# トークン化関数の準備
+def preprocess_func(text: str) -> List[str]:
+    tokenizer_obj = dictionary.Dictionary(dict="small").create()
+    mode = tokenizer.Tokenizer.SplitMode.A
+    tokens = tokenizer_obj.tokenize(text ,mode)
+    words = [token.surface() for token in tokens]
+    words = list(set(words))  # 重複削除
+    return words
+bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
 
 
 # ログイン時の処理
@@ -60,13 +75,27 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
-
+    
+    # メッセージの内容
     content = message.content
-    result = get_filename(content)
-    if result:
-        result = yomi_to_filename[result]
-        file_path = f"./img/{result}.png"
-        await message.channel.send(file=discord.File(file_path))
+    
+    # ボットがメンションされている場合、BM25で検索する
+    if client.user.mentioned_in(message):
+        content = content.replace(f"<@{client.user.id}>", "").strip()
+        content = normalize_text(content)
+        if content:
+            content = bm25_retriever.invoke(content)[0].page_content
+            result = yomi_to_filename[content]
+            file_path = f"./img/{result}.png"
+            await message.channel.send(file=discord.File(file_path))
+            
+    # メンションされていない場合、メッセージから勝手に反応する
+    else:
+        content = get_filename(content)
+        if content:
+            result = yomi_to_filename[content]
+            file_path = f"./img/{result}.png"
+            await message.channel.send(file=discord.File(file_path))
 
 
 client.run(TOKEN)
