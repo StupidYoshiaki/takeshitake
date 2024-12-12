@@ -16,6 +16,12 @@ intents.message_content = True
 intents.messages = True
 client = discord.Client(intents=intents)
 
+# テキスト正規化関数
+def normalize_text(text):
+    text = unicodedata.normalize("NFKC", text)
+    text = kaka.do(text)
+    return text
+
 # 漢字かな変換のためのインスタンス
 kakasi = kakasi()
 kakasi.setMode("J", "H")
@@ -26,14 +32,16 @@ filenames = os.listdir("./img")
 yomi_to_filename = {}
 for filename in filenames:
     filename = filename.replace(".png", "")
-    filename = unicodedata.normalize("NFKC", filename)
-    yomi = kakasi.do(filename)
+    # filename = unicodedata.normalize("NFKC", filename)
+    # yomi = kakasi.do(filename)
+    yomi = normalize_text(filename)
     yomi_to_filename[yomi] = filename
 
 
 # 部分一致でファイル名を取得する関数
 def get_filename(query, yomi_to_filename=yomi_to_filename):
-    query_yomi = conv.do(query)
+    # query_yomi = conv.do(query)
+    query_yomi = normalize_text(query)
     pattern = re.compile(re.escape(query_yomi))
     match = next(
         (file for file in yomi_to_filename.keys() if pattern.search(file)), None
