@@ -11,6 +11,8 @@ from sudachipy import tokenizer
 from sudachipy import dictionary
 from langchain.retrievers import BM25Retriever
 
+from server import server_thread
+
 
 # 環境変数からトークンを取得
 load_dotenv()
@@ -69,7 +71,6 @@ bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_fu
 async def on_ready():
     print("ログインしました")
 
-
 # メッセージ受信時の処理
 @client.event
 async def on_message(message):
@@ -97,5 +98,5 @@ async def on_message(message):
             file_path = f"./img/{result}.png"
             await message.channel.send(file=discord.File(file_path))
 
-
+server_thread()
 client.run(TOKEN)
