@@ -1,7 +1,9 @@
 discord.py
 python-dotenv
 pykakasi
-langchain
+langchain-community
 rank_bm25
 sudachipy
 sudachidict_small
+uvicorn
+fastapi
