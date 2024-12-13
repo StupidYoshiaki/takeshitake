@@ -1,16 +1,25 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
+WORKDIR /bot
 
-# コンテナ内の作業ディレクトリを設定
-WORKDIR /app
+# 更新・日本語化
+RUN apt-get update && apt-get -y install locales && apt-get -y upgrade && \
+	localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
+ENV LANG ja_JP.UTF-8
+ENV LANGUAGE ja_JP:ja
+ENV LC_ALL ja_JP.UTF-8
+ENV TZ Asia/Tokyo
+ENV TERM xterm
 
-# 必要なファイルをすべてコピー
-COPY . .
+# pip install
+COPY requirements.txt /bot/
+RUN pip install -r requirements.txt
+COPY . /bot
 
-# 必要なPythonパッケージをインストール
-RUN pip install --no-cache-dir -r requirements.txt
+# ポート開放 (uvicornで指定したポート)
+EXPOSE 8080
 
-# ボットを実行
-CMD ["python", "src/bot.py"]
+# 実行
+CMD python src/main.py
 
 # docker build -t takeshitake .
 # docker run -it takeshitake
