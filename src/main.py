@@ -80,6 +80,10 @@ async def on_message(message):
     # メッセージの内容
     content = message.content
     
+    # 一文字の場合は無視
+    if len(content) == 1:
+        return
+    
     # ボットがメンションされている場合、BM25で検索する
     if client.user.mentioned_in(message):
         content = content.replace(f"<@{client.user.id}>", "").strip()
