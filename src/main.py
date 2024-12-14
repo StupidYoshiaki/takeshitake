@@ -6,10 +6,10 @@ import unicodedata
 from pykakasi import kakasi
 from dotenv import load_dotenv
 
-from typing import List
-from sudachipy import tokenizer
-from sudachipy import dictionary
-from langchain.retrievers import BM25Retriever
+# from typing import List
+# from sudachipy import tokenizer
+# from sudachipy import dictionary
+# from langchain.retrievers import BM25Retriever
 
 import torch
 from server import server_thread
@@ -57,15 +57,15 @@ def get_filename(query, yomi_to_filename=yomi_to_filename):
     )
     return match if match else None
 
-# トークン化関数の準備
-def preprocess_func(text: str) -> List[str]:
-    tokenizer_obj = dictionary.Dictionary(dict="small").create()
-    mode = tokenizer.Tokenizer.SplitMode.A
-    tokens = tokenizer_obj.tokenize(text ,mode)
-    words = [token.surface() for token in tokens]
-    words = list(set(words))  # 重複削除
-    return words
-bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
+# # トークン化関数の準備
+# def preprocess_func(text: str) -> List[str]:
+#     tokenizer_obj = dictionary.Dictionary(dict="small").create()
+#     mode = tokenizer.Tokenizer.SplitMode.A
+#     tokens = tokenizer_obj.tokenize(text ,mode)
+#     words = [token.surface() for token in tokens]
+#     words = list(set(words))  # 重複削除
+#     return words
+# bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
 
 # 埋め込みモデル
 model = SentenceBertJapanese()
