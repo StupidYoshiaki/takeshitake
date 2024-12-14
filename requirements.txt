@@ -1,9 +1,17 @@
 discord.py
 python-dotenv
+
 pykakasi
+
 langchain-community
 rank_bm25
+
 sudachipy
 sudachidict_small
+
 uvicorn
 fastapi
+
+torch
+faiss-cpu
+transformers

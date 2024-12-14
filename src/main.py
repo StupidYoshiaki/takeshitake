@@ -11,7 +11,9 @@ from sudachipy import tokenizer
 from sudachipy import dictionary
 from langchain.retrievers import BM25Retriever
 
+import torch
 from server import server_thread
+from embeddings import SentenceBertJapanese
 
 
 # 環境変数からトークンを取得
@@ -24,7 +26,7 @@ intents.message_content = True
 intents.messages = True
 client = discord.Client(intents=intents)
 
-# 漢字かな変換のためのインスタンス
+# 漢字かな変換
 kakasi = kakasi()
 kakasi.setMode("J", "H")
 conv = kakasi.getConverter()
@@ -65,6 +67,20 @@ def preprocess_func(text: str) -> List[str]:
     return words
 bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
 
+# 埋め込みモデル
+model = SentenceBertJapanese()
+with open("./emb/embeddings.pt", "rb") as f:
+    filename_to_embedding = torch.load(f)
+
+def get_top_k(query, k=1):
+    query_embedding = model.encode([query])[0]
+    filename_to_similarity = {}
+    for filename, embedding in filename_to_embedding.items():
+        similarity = torch.nn.functional.cosine_similarity(query_embedding, embedding, dim=0)
+        filename_to_similarity[filename] = similarity.item()
+    sorted_filename_to_similarity = sorted(filename_to_similarity.items(), key=lambda x: x[1], reverse=True)
+    return sorted_filename_to_similarity[:k]
+
 
 # ログイン時の処理
 @client.event
@@ -81,16 +97,17 @@ async def on_message(message):
     content = message.content
     
     # 一文字の場合は無視
-    if len(content) == 1:
+    if len(content) <= 2:
         return
     
-    # ボットがメンションされている場合、BM25で検索する
+    # ボットがメンションされている場合、埋め込みで検索する
     if client.user.mentioned_in(message):
         content = content.replace(f"<@{client.user.id}>", "").strip()
-        content = normalize_text(content)
+        content = unicodedata.normalize("NFKC", content)
         if content:
-            content = bm25_retriever.invoke(content)[0].page_content
-            result = yomi_to_filename[content]
+            # content = bm25_retriever.invoke(content)[0].page_content
+            content = f'"{content}"の返答文'
+            result = get_top_k(content)[0][0]
             file_path = f"./img/{result}.png"
             await message.channel.send(file=discord.File(file_path))
             
