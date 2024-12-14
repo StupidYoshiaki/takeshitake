@@ -106,7 +106,7 @@ async def on_message(message):
         content = unicodedata.normalize("NFKC", content)
         if content:
             # content = bm25_retriever.invoke(content)[0].page_content
-            content = f'"{content}"の返答文'
+            content = f'「{content}」の返答文'
             result = get_top_k(content)[0][0]
             file_path = f"./img/{result}.png"
             await message.channel.send(file=discord.File(file_path))
