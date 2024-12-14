@@ -46,9 +46,9 @@ for filename in filenames:
     yomi_to_filename[yomi] = filename
 
 # 部分一致でファイル名を取得する関数
-def get_filename(query, yomi_to_filename=yomi_to_filename):
+def get_filename(query_yomi, yomi_to_filename=yomi_to_filename):
     # query_yomi = conv.do(query)
-    query_yomi = normalize_text(query)
+    # query_yomi = normalize_text(query)
     pattern = re.compile(re.escape(query_yomi))
     match = next(
         (file for file in yomi_to_filename.keys() if pattern.search(file)), None
@@ -80,10 +80,6 @@ async def on_message(message):
     # メッセージの内容
     content = message.content
     
-    # 2文字以下の投稿には反応しない
-    if len(content) <= 2:
-        return
-    
     # ボットがメンションされている場合、BM25で検索する
     if client.user.mentioned_in(message):
         content = content.replace(f"<@{client.user.id}>", "").strip()
@@ -97,6 +93,10 @@ async def on_message(message):
     # メンションされていない場合、メッセージから勝手に反応する
     else:
         content = get_filename(content)
+        content = normalize_text(content)
+        # 2文字以下の投稿には反応しない
+        if len(content) <= 2:
+            return
         if content:
             result = yomi_to_filename[content]
             file_path = f"./img/{result}.png"
