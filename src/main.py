@@ -6,14 +6,12 @@ import unicodedata
 from pykakasi import kakasi
 from dotenv import load_dotenv
 
-# from typing import List
-# from sudachipy import tokenizer
-# from sudachipy import dictionary
-# from langchain.retrievers import BM25Retriever
+from typing import List
+from sudachipy import tokenizer
+from sudachipy import dictionary
+from langchain.retrievers import BM25Retriever
 
-import torch
 from server import server_thread
-from embeddings import SentenceBertJapanese
 
 
 # 環境変数からトークンを取得
@@ -26,7 +24,7 @@ intents.message_content = True
 intents.messages = True
 client = discord.Client(intents=intents)
 
-# 漢字かな変換
+# 漢字かな変換のためのインスタンス
 kakasi = kakasi()
 kakasi.setMode("J", "H")
 conv = kakasi.getConverter()
@@ -57,29 +55,15 @@ def get_filename(query, yomi_to_filename=yomi_to_filename):
     )
     return match if match else None
 
-# # トークン化関数の準備
-# def preprocess_func(text: str) -> List[str]:
-#     tokenizer_obj = dictionary.Dictionary(dict="small").create()
-#     mode = tokenizer.Tokenizer.SplitMode.A
-#     tokens = tokenizer_obj.tokenize(text ,mode)
-#     words = [token.surface() for token in tokens]
-#     words = list(set(words))  # 重複削除
-#     return words
-# bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
-
-# 埋め込みモデル
-model = SentenceBertJapanese()
-with open("./emb/embeddings.pt", "rb") as f:
-    filename_to_embedding = torch.load(f)
-
-def get_top_k(query, k=1):
-    query_embedding = model.encode([query])[0]
-    filename_to_similarity = {}
-    for filename, embedding in filename_to_embedding.items():
-        similarity = torch.nn.functional.cosine_similarity(query_embedding, embedding, dim=0)
-        filename_to_similarity[filename] = similarity.item()
-    sorted_filename_to_similarity = sorted(filename_to_similarity.items(), key=lambda x: x[1], reverse=True)
-    return sorted_filename_to_similarity[:k]
+# トークン化関数の準備
+def preprocess_func(text: str) -> List[str]:
+    tokenizer_obj = dictionary.Dictionary(dict="small").create()
+    mode = tokenizer.Tokenizer.SplitMode.A
+    tokens = tokenizer_obj.tokenize(text ,mode)
+    words = [token.surface() for token in tokens]
+    words = list(set(words))  # 重複削除
+    return words
+bm25_retriever = BM25Retriever.from_texts(yomi_to_filename.keys(), preprocess_func=preprocess_func, k=1)
 
 
 # ログイン時の処理
@@ -96,18 +80,13 @@ async def on_message(message):
     # メッセージの内容
     content = message.content
     
-    # 3文字以上のメッセージのみ処理する
-    if len(content) < 3:
-        return
-    
     # ボットがメンションされている場合、BM25で検索する
     if client.user.mentioned_in(message):
         content = content.replace(f"<@{client.user.id}>", "").strip()
-        content = unicodedata.normalize("NFKC", content)
+        content = normalize_text(content)
         if content:
-            # content = bm25_retriever.invoke(content)[0].page_content
-            content = f'「{content}」の返答文'
-            result = get_top_k(content)[0][0]
+            content = bm25_retriever.invoke(content)[0].page_content
+            result = yomi_to_filename[content]
             file_path = f"./img/{result}.png"
             await message.channel.send(file=discord.File(file_path))
             
