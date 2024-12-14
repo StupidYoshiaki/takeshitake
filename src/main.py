@@ -96,11 +96,11 @@ async def on_message(message):
     # メッセージの内容
     content = message.content
     
-    # 一文字の場合は無視
-    if len(content) <= 2:
+    # 3文字以上のメッセージのみ処理する
+    if len(content) < 3:
         return
     
-    # ボットがメンションされている場合、埋め込みで検索する
+    # ボットがメンションされている場合、BM25で検索する
     if client.user.mentioned_in(message):
         content = content.replace(f"<@{client.user.id}>", "").strip()
         content = unicodedata.normalize("NFKC", content)
