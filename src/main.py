@@ -36,7 +36,7 @@ def normalize_text(text):
     return text
 
 # imgフォルダ内のファイル名を取得
-filenames = os.listdir("./img")
+filenames = os.listdir("./img/raw")
 yomi_to_filename = {}
 for filename in filenames:
     filename = filename.replace(".png", "")
