@@ -92,11 +92,11 @@ async def on_message(message):
             
     # メンションされていない場合、メッセージから勝手に反応する
     else:
-        content = get_filename(content)
         content = normalize_text(content)
         # 2文字以下の投稿には反応しない
         if len(content) <= 2:
             return
+        content = get_filename(content)
         if content:
             result = yomi_to_filename[content]
             file_path = f"./img/{result}.png"
