@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from typing import List
 from sudachipy import tokenizer
 from sudachipy import dictionary
-from langchain.retrievers import BM25Retriever
+from langchain_community.retrievers import BM25Retriever
 
 import cv2
 import random
