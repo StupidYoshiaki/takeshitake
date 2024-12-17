@@ -18,6 +18,10 @@ COPY . /bot
 # ポート開放 (uvicornで指定したポート)
 EXPOSE 8080
 
+# OpenCV
+RUN apt -y update
+RUN apt -y install libopencv-dev
+
 # 実行
 CMD python src/main.py
 
