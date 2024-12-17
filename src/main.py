@@ -148,26 +148,38 @@ async def on_message(message):
             file_path = f"./img/raw/{result}.png"
             await message.channel.send(file=discord.File(file_path))
             
-    # メンションされていない場合、メッセージから勝手に反応する
-    else:
-        content = normalize_text(content)
-        # 2文字以下の投稿には反応しない
-        if len(content) <= 2:
-            return
-        content = get_filename(content)
-        if content:
-            result = yomi_to_filename[content]
-            file_path = f"./img/raw/{result}.png"
-            await message.channel.send(file=discord.File(file_path))
+    # # メンションされていない場合、メッセージから勝手に反応する
+    # else:
+    #     content = normalize_text(content)
+    #     # 2文字以下の投稿には反応しない
+    #     if len(content) <= 2:
+    #         return
+    #     content = get_filename(content)
+    #     if content:
+    #         result = yomi_to_filename[content]
+    #         file_path = f"./img/raw/{result}.png"
+    #         await message.channel.send(file=discord.File(file_path))
 
-@tree.command(name="slot", description="CR竹下家", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
-async def slot(interaction: discord.Interaction):
+@tree.command(name="pachinko", description="CR竹下家", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
+async def pachinko(interaction: discord.Interaction):
     await interaction.response.defer()
     base_images_path = "./img/raw"
     output_path = "./output/slot.png"
     number_images_path = "./img/slot"
     create_slot_image(base_images_path, output_path, number_images_path)
     await interaction.followup.send(file=discord.File(output_path))
+    
+@tree.command(name="goroku",description="語録検索",guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
+async def goroku(interaction: discord.Interaction,text:str):
+    text = normalize_text(text)
+    text = get_filename(text)
+    if text:
+        text = yomi_to_filename[text]
+        file_path = f"./img/raw/{text}.png"
+        await interaction.response.send_message(file=discord.File(file_path))
+    else:
+        text = "ねえよニワカが＾＾；"
+        await interaction.response.send_message(text)
 
 server_thread()
 client.run(TOKEN)
