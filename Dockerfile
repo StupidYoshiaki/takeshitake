@@ -19,8 +19,8 @@ COPY . /bot
 EXPOSE 8080
 
 # OpenCV
-RUN apt -y update
-RUN apt -y install libopencv-dev
+RUN apt-get -y update
+RUN apt-get -y install libopencv-dev
 
 # 実行
 CMD python src/main.py
