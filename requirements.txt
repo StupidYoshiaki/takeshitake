@@ -8,5 +8,9 @@ rank_bm25
 sudachipy
 sudachidict_small
 
+opencv-python
+numpy
+pillow
+
 uvicorn
 fastapi
