@@ -127,17 +127,17 @@ def create_telop_image(base_images_path, output_path, text):
     img = Image.open(base_images_path)
     draw = ImageDraw.Draw(img)
 
-    font_size = 80 - (len(text)//15 - 1) * 10
+    font_size = 85 - (len(text)//5) * 5
     # フォントの設定
-    font = ImageFont.truetype("./font/hiragino.ttc", font_size)
+    font = ImageFont.truetype("./font/ZenOldMincho-Medium.ttf", font_size)
 
     # テキストと配置を設定
     width, height = img.size
-    x, y, x2, y2 = draw.textbbox((width / 2, height-15), text, font=font, anchor='md')
+    x, y, x2, y2 = draw.textbbox((width / 2, height-40), text, font=font, anchor='md')
     x, y, x2, y2 = int(x), int(y), int(x2), int(y2)
 
     # 小さなキャンバスを作成して文字列を描画
-    text_width, text_height = x2 - x + 10, y2 - y + 10
+    text_width, text_height = x2 - x + 40, y2 - y + 40
     small_canvas_size = (text_width, text_height)
     small_canvas = Image.new("RGBA", small_canvas_size)  # 透明なキャンバス
 
