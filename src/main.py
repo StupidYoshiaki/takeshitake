@@ -251,7 +251,7 @@ class TelopView(View):
         for item in self.children:
             item.disabled = True
         # メッセージを編集してビューを更新
-        await self.message.edit(content="タイムアウトしました。再度コマンドを実行してください。", view=self)
+        await self.message.edit(content="タイムアウトしました。", view=self)
 
 
 @tree.command(name="telop", description="テロップ", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
