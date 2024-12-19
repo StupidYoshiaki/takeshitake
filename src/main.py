@@ -214,10 +214,9 @@ async def goroku(interaction: discord.Interaction,text:str):
         await interaction.response.send_message(text)
 
 class TelopView(View):
-    def __init__(self, text, interaction):
+    def __init__(self, text):
         super().__init__()
         self.text = text
-        self.interaction = interaction
         self.selected_person = None
 
         # セレクトメニューを追加
@@ -234,25 +233,29 @@ class TelopView(View):
 
     async def select_callback(self, interaction: discord.Interaction):
         self.selected_person = self.select_menu.values[0]
-        
+
         # 画像生成処理
         base_images_path = f"./img/telop/{self.selected_person}.png"
         output_path = "./output/telop.png"
         create_telop_image(base_images_path, output_path, self.text)
 
-        # 画像を返信
-        await self.interaction.followup.send(file=discord.File(output_path))
-        
+        # メニューを無効化
         self.select_menu.disabled = True
-        self.stop()  # Viewを終了
+        await interaction.response.edit_message(view=self)
+
+        # 画像を返信
+        await interaction.followup.send(file=discord.File(output_path))
 
 
 @tree.command(name="telop", description="テロップ", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
 async def telop(interaction: discord.Interaction, text: str):
+    # 応答を延期
     await interaction.response.defer()
-    view = TelopView(text, interaction)
-    await interaction.response.send_message("誰を選びますか？", view=view)
-    
+
+    # ビューを生成して送信
+    view = TelopView(text)
+    await interaction.followup.send("誰を選びますか？", view=view)
+
 
 server_thread()
 client.run(TOKEN)
