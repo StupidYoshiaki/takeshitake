@@ -234,8 +234,7 @@ class TelopView(View):
 
     async def select_callback(self, interaction: discord.Interaction):
         self.selected_person = self.select_menu.values[0]
-        await interaction.response.defer()  # 選択を確定
-
+        
         # 画像生成処理
         base_images_path = f"./img/telop/{self.selected_person}.png"
         output_path = "./output/telop.png"
@@ -243,6 +242,8 @@ class TelopView(View):
 
         # 画像を返信
         await self.interaction.followup.send(file=discord.File(output_path))
+        
+        self.select_menu.disabled = True
         self.stop()  # Viewを終了
 
 
