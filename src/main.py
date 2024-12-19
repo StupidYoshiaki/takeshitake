@@ -244,7 +244,7 @@ class TelopView(View):
         # 画像を返信
         await self.interaction.followup.send(file=discord.File(output_path))
         
-        self.selected_menu.disabled = True  # メニューを無効化
+        self.select_menu.disabled = True  # メニューを無効化
         self.stop()  # Viewを終了
 
 
