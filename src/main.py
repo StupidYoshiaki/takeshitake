@@ -250,6 +250,7 @@ class TelopView(View):
 
 @tree.command(name="telop", description="テロップ", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
 async def telop(interaction: discord.Interaction, text: str):
+    await interaction.response.defer()
     view = TelopView(text, interaction)
     await interaction.response.send_message("誰を選びますか？", view=view)
     
