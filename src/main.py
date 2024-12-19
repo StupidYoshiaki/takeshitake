@@ -215,9 +215,8 @@ async def goroku(interaction: discord.Interaction,text:str):
 
 class TelopView(View):
     def __init__(self, text):
-        super().__init__()
+        super().__init__(timeout=180.0)  # タイムアウトを設定（180秒）
         self.text = text
-        self.selected_person = None
 
         # セレクトメニューを追加
         self.select_menu = Select(
@@ -232,19 +231,27 @@ class TelopView(View):
         self.add_item(self.select_menu)
 
     async def select_callback(self, interaction: discord.Interaction):
-        self.selected_person = self.select_menu.values[0]
+        # ユーザーが選択した値を取得
+        selected_person = self.select_menu.values[0]
+
+        # セレクトメニューを無効化
+        self.select_menu.disabled = True
+        await interaction.response.edit_message(view=self)  # 応答済みにする
 
         # 画像生成処理
-        base_images_path = f"./img/telop/{self.selected_person}.png"
+        base_images_path = f"./img/telop/{selected_person}.png"
         output_path = "./output/telop.png"
         create_telop_image(base_images_path, output_path, self.text)
 
-        # メニューを無効化
-        self.select_menu.disabled = True
-        await interaction.response.edit_message(view=self)
-
-        # 画像を返信
+        # フォローアップメッセージで画像を送信
         await interaction.followup.send(file=discord.File(output_path))
+
+    async def on_timeout(self):
+        # タイムアウト時にビューを無効化
+        for item in self.children:
+            item.disabled = True
+        # メッセージを編集してビューを更新
+        await self.message.edit(content="タイムアウトしました。再度コマンドを実行してください。", view=self)
 
 
 @tree.command(name="telop", description="テロップ", guild=discord.Object(id=int(os.getenv("GUILD_ID"))))
